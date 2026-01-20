@@ -174,22 +174,22 @@ export default function LuckyBasePage() {
   );
 
   return (
-    <div className="min-h-screen bg-black text-white p-4 sm:p-8 font-sans selection:bg-lime-400 selection:text-black">
-      <header className="max-w-7xl mx-auto flex justify-between items-center mb-12 border-b border-white/10 pb-6">
+    <div className="min-h-screen bg-background text-foreground p-4 sm:p-8 font-sans selection:bg-base-blue selection:text-white">
+      <header className="max-w-7xl mx-auto flex justify-between items-center mb-12 border-b border-white/5 pb-6">
         <div className="flex items-center gap-3">
-          <h1 className="text-3xl font-black tracking-tighter italic">
-            LUCKY<span className="text-lime-400">BASE</span>
+          <h1 className="text-2xl font-bold tracking-tight">
+            LUCKY<span className="text-base-blue">BASE</span>
           </h1>
-          <span className="bg-lime-400 text-black text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
+          <span className="bg-base-blue/10 text-base-blue text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider border border-base-blue/20">
             Beta
           </span>
         </div>
 
         <div className="flex items-center gap-4">
           <Wallet>
-            <ConnectWallet className="bg-white hover:bg-lime-400 text-black font-bold transition-colors">
+            <ConnectWallet className="bg-base-blue hover:bg-base-blue/90 text-white font-bold transition-all rounded-xl">
               <Avatar className="h-6 w-6" />
-              <Name className="text-black" />
+              <Name className="text-white" />
             </ConnectWallet>
             <WalletDropdown>
               <Identity className="px-4 pt-3 pb-2" hasCopyAddressOnClick>
@@ -205,37 +205,38 @@ export default function LuckyBasePage() {
 
       <main className="max-w-7xl mx-auto">
         {!activeDuelId ? (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
-              <div className="flex justify-between items-center mb-8">
-                <h2 className="text-2xl font-bold tracking-tight">GAME LOBBY</h2>
-                <div className="flex gap-2">
-                  <span className="w-2 h-2 rounded-full bg-lime-400 animate-pulse" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">Live Now</span>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-sm font-bold tracking-widest text-base-gray uppercase">Game Lobby</h2>
+                <div className="flex items-center gap-2 bg-base-blue/5 px-3 py-1 rounded-full border border-base-blue/10">
+                  <span className="w-2 h-2 rounded-full bg-base-blue animate-pulse" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-base-blue">Live</span>
                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div className="grid grid-cols-1 gap-4">
                 {activeDuels.length === 0 && (
-                  <div className="text-center py-12 border border-dashed border-white/10 rounded-2xl">
-                    <p className="text-white/20 font-bold uppercase tracking-widest">No active duels found</p>
+                  <div className="text-center py-20 border border-dashed border-white/5 rounded-3xl bg-white/[0.02]">
+                    <p className="text-base-gray text-xs font-bold uppercase tracking-[0.2em]">No active duels found</p>
                   </div>
                 )}
                 {activeDuels.map((duel) => (
-                  <div key={duel.id} className="group bg-white/5 border border-white/10 p-6 rounded-2xl flex justify-between items-center hover:border-lime-400/50 transition-all duration-300">
+                  <div key={duel.id} className="group bg-white/[0.03] border border-white/5 p-5 rounded-2xl flex justify-between items-center hover:bg-white/[0.05] hover:border-base-blue/30 transition-all duration-300">
                     <div className="flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-full bg-gradient-to-br from-lime-400 to-green-600 overflow-hidden">
+                      <div className="h-12 w-12 rounded-xl bg-base-blue/10 border border-base-blue/20 overflow-hidden flex items-center justify-center">
                          <Avatar address={duel.player1 as `0x${string}`} />
                       </div>
                       <div>
-                        <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Host</p>
-                        <p className="font-mono text-lg">{`${duel.player1.slice(0, 6)}...${duel.player1.slice(-4)}`}</p>
+                        <p className="text-[10px] font-bold text-base-gray uppercase tracking-widest mb-0.5">Host</p>
+                        <Name address={duel.player1 as `0x${string}`} className="font-bold text-lg block" />
+                        <p className="font-mono text-[10px] text-base-gray/60">{`${duel.player1.slice(0, 6)}...${duel.player1.slice(-4)}`}</p>
                       </div>
                     </div>
 
                     <div className="text-center">
-                      <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Stake</p>
-                      <p className="text-2xl font-black text-lime-400">{duel.stake} ETH</p>
+                      <p className="text-[10px] font-bold text-base-gray uppercase tracking-widest mb-0.5">Stake</p>
+                      <p className="text-xl font-bold text-foreground">{duel.stake} <span className="text-base-blue text-sm">ETH</span></p>
                     </div>
 
                     <button
@@ -244,34 +245,34 @@ export default function LuckyBasePage() {
                         writeContract({
                           address: DICE_GAME_ADDRESS,
                           abi: DICE_GAME_ABI,
-                          functionName: 'joinGame', // Matches joinDuel requirement
+                          functionName: 'joinGame',
                           args: [BigInt(duel.id)],
                           value: parseEther(duel.stake as `${number}`),
                           chainId: base.id,
                         });
                       }}
-                      className="bg-white text-black font-black px-8 py-3 rounded-xl hover:bg-lime-400 transition-colors uppercase italic tracking-tighter"
+                      className="bg-foreground text-background font-bold px-6 py-2.5 rounded-xl hover:bg-base-blue hover:text-white transition-all uppercase text-xs tracking-wider"
                     >
-                      Join
+                      Join Duel
                     </button>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="bg-white/5 border border-white/10 rounded-3xl p-8 h-fit sticky top-8">
-              <h3 className="text-xl font-black mb-6 italic">CREATE DUEL</h3>
+            <div className="bg-white/[0.03] border border-white/5 rounded-3xl p-8 h-fit sticky top-8">
+              <h3 className="text-lg font-bold mb-6">Create Duel</h3>
               <div className="space-y-6">
                 <div>
-                  <label className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em] block mb-2">Stake Amount</label>
+                  <label className="text-[10px] font-bold text-base-gray uppercase tracking-widest block mb-2">Stake Amount</label>
                   <div className="relative">
                     <input
                       type="text"
                       value="0.10"
                       readOnly
-                      className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 font-mono text-lime-400 focus:outline-none"
+                      className="w-full bg-background border border-white/10 rounded-xl px-4 py-3 font-mono text-foreground focus:outline-none focus:border-base-blue/50 transition-colors"
                     />
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-xs">ETH</span>
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-xs text-base-gray">ETH</span>
                   </div>
                 </div>
 
@@ -280,86 +281,88 @@ export default function LuckyBasePage() {
                     writeContract({
                       address: DICE_GAME_ADDRESS,
                       abi: DICE_GAME_ABI,
-                      functionName: 'createGameETH', // Matches createDuel requirement
+                      functionName: 'createGameETH',
                       value: parseEther('0.10'),
                       chainId: base.id,
                     });
                   }}
-                  className="w-full bg-lime-400 text-black font-black py-4 rounded-xl hover:bg-white transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_20px_rgba(163,230,53,0.2)] uppercase italic"
+                  className="w-full bg-base-blue text-white font-bold py-4 rounded-xl hover:opacity-90 transition-all transform active:scale-[0.98] shadow-lg shadow-base-blue/20 uppercase text-sm tracking-widest"
                 >
                   Launch Duel
                 </button>
 
-                <p className="text-[10px] text-white/30 text-center leading-relaxed font-medium">
-                  By creating a duel, you agree to the 10% platform fee. <br/>
-                  Funds can be refunded if no one joins within 24h.
-                </p>
+                <div className="bg-white/[0.02] p-4 rounded-xl border border-white/5">
+                  <p className="text-[10px] text-base-gray text-center leading-relaxed font-medium">
+                    By creating a duel, you agree to the 10% platform fee. <br/>
+                    Funds can be refunded if no one joins within 24h.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
         ) : (
           <div className="flex flex-col items-center">
-            <div className="w-full max-w-4xl bg-white/5 border border-white/10 rounded-[3rem] p-12 mb-12 relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-lime-400 to-transparent opacity-50" />
+            <div className="w-full max-w-4xl bg-white/[0.03] border border-white/5 rounded-[2.5rem] p-12 mb-12 relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-base-blue/50 to-transparent" />
 
-              <div className="absolute top-6 left-1/2 -translate-x-1/2 bg-white/5 px-3 py-1 rounded-full border border-white/10">
-                <p className="text-[8px] font-black uppercase tracking-[0.2em] text-white/20">
+              <div className="absolute top-6 left-1/2 -translate-x-1/2 bg-white/5 px-4 py-1.5 rounded-full border border-white/10">
+                <p className="text-[9px] font-bold uppercase tracking-widest text-base-gray">
                   Platform Fee: 10% • 24h Safety Refund Active
                 </p>
               </div>
 
               <div className="flex justify-between items-center relative z-10 mt-8">
-                <div className="flex flex-col items-center gap-6">
+                <div className="flex flex-col items-center gap-6 w-1/3">
                   <div className="relative">
-                    <div className="h-32 w-32 rounded-3xl bg-lime-400 rotate-3 absolute -inset-1 opacity-20 blur-xl" />
-                    <div className="h-32 w-32 rounded-3xl bg-white/10 border-2 border-white/20 flex items-center justify-center relative overflow-hidden group">
+                    <div className="h-32 w-32 rounded-3xl bg-base-blue/10 absolute -inset-2 blur-2xl opacity-30" />
+                    <div className="h-32 w-32 rounded-[2rem] bg-background border-2 border-white/5 flex items-center justify-center relative overflow-hidden shadow-2xl">
                       <Avatar className="h-full w-full" address={selectedDuel?.player1 as `0x${string}`} />
                     </div>
                   </div>
                   <div className="text-center">
-                    <p className="text-lime-400 text-[10px] font-black uppercase tracking-[0.3em] mb-1">Host</p>
-                    <Name address={selectedDuel?.player1 as `0x${string}`} className="text-2xl font-black italic" />
-                    <p className="text-white/40 font-mono text-xs mt-1">
+                    <p className="text-base-blue text-[10px] font-bold uppercase tracking-[0.2em] mb-1">Host</p>
+                    <Name address={selectedDuel?.player1 as `0x${string}`} className="text-2xl font-bold" />
+                    <p className="text-base-gray font-mono text-xs mt-1">
                       {selectedDuel ? `${selectedDuel.player1.slice(0, 6)}...${selectedDuel.player1.slice(-4)}` : ''}
                     </p>
                   </div>
                 </div>
 
                 <div className="flex flex-col items-center gap-4">
-                  <div className="text-6xl font-black italic text-white/10 select-none tracking-tighter">VS</div>
-                  <div className="bg-lime-400/20 px-4 py-1 rounded-full border border-lime-400/30">
-                    <p className="text-lime-400 text-[10px] font-bold uppercase tracking-widest">{selectedDuel?.stake || '0.10'} ETH STAKE</p>
+                  <div className="text-5xl font-bold text-white/5 select-none tracking-tighter">VS</div>
+                  <div className="bg-base-blue/10 px-4 py-1.5 rounded-full border border-base-blue/20">
+                    <p className="text-base-blue text-[10px] font-bold uppercase tracking-widest">{selectedDuel?.stake || '0.10'} ETH STAKE</p>
                   </div>
                 </div>
 
-                <div className="flex flex-col items-center gap-6">
+                <div className="flex flex-col items-center gap-6 w-1/3">
                   <div className="relative">
-                    <div className="h-32 w-32 rounded-3xl bg-white/5 border-2 border-dashed border-white/10 flex items-center justify-center relative">
-                      <span className="text-white/20 font-black text-4xl">?</span>
+                    <div className="h-32 w-32 rounded-[2rem] bg-white/[0.02] border-2 border-dashed border-white/10 flex items-center justify-center relative">
+                      <span className="text-white/10 font-bold text-4xl">?</span>
                     </div>
                   </div>
                   <div className="text-center">
-                    <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em] mb-1">Opponent</p>
-                    <div className="h-8 w-32 bg-white/5 rounded-lg animate-pulse" />
-                    <p className="text-white/10 font-mono text-xs mt-2 italic">Waiting for join...</p>
+                    <p className="text-white/10 text-[10px] font-bold uppercase tracking-[0.2em] mb-1">Opponent</p>
+                    <div className="h-8 w-32 bg-white/5 rounded-lg animate-pulse mx-auto" />
+                    <p className="text-base-gray/40 font-mono text-[10px] mt-2 italic">Waiting for join...</p>
                   </div>
                 </div>
               </div>
 
-              <div className="mt-16 flex justify-around items-center">
+              <div className="mt-16 flex justify-center items-center gap-12">
                 <div className="relative group">
-                  <div className="w-24 h-24 bg-white rounded-2xl flex items-center justify-center text-black text-5xl font-black shadow-[0_8px_0_#d1d5db] animate-bounce transition-transform group-hover:scale-110">
+                  <div className="w-24 h-24 bg-white rounded-2xl flex items-center justify-center text-background text-5xl font-bold shadow-xl animate-bounce">
                     6
                   </div>
-                  <div className="absolute -bottom-8 left-0 right-0 text-center">
-                    <p className="text-lime-400 text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">Rolling</p>
+                  <div className="absolute -bottom-10 left-0 right-0 text-center">
+                    <p className="text-base-blue text-[10px] font-bold uppercase tracking-widest animate-pulse">Rolling</p>
                   </div>
                 </div>
 
-                <div className="w-20 h-0.5 bg-gradient-to-r from-lime-400/50 to-transparent" />
+                <div className="w-24 h-px bg-gradient-to-r from-base-blue/50 to-transparent" />
 
-                <div className="relative opacity-20">
-                  <div className="w-24 h-24 bg-white/5 border-2 border-dashed border-white/20 rounded-2xl flex items-center justify-center text-white/20 text-5xl font-black">
+                <div className="relative opacity-30">
+                  <div className="w-24 h-24 bg-white/5 border-2 border-dashed border-white/10 rounded-2xl flex items-center justify-center text-white/20 text-5xl font-bold">
                     ?
                   </div>
                 </div>
@@ -368,9 +371,9 @@ export default function LuckyBasePage() {
 
             <button
               onClick={() => setActiveDuelId(null)}
-              className="mb-8 text-white/40 hover:text-white transition-colors text-xs font-bold uppercase tracking-widest flex items-center gap-2"
+              className="mb-8 text-base-gray hover:text-foreground transition-colors text-xs font-bold uppercase tracking-widest flex items-center gap-2 group"
             >
-              ← Back to Lobby
+              <span className="group-hover:-translate-x-1 transition-transform">←</span> Back to Lobby
             </button>
           </div>
         )}
