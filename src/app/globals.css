@@ -1,10 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0A0B0D;
-  --foreground: #FFFFFF;
+  --background: #F0F5FF;
+  --foreground: #0A0B0D;
   --base-blue: #0052FF;
   --base-gray: #8A919E;
+  --card-background: #FFFFFF;
 }
 
 @theme inline {
@@ -12,6 +13,7 @@
   --color-foreground: var(--foreground);
   --color-base-blue: var(--base-blue);
   --color-base-gray: var(--base-gray);
+  --color-card: var(--card-background);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

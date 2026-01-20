@@ -30,7 +30,7 @@ export async function generateMetadata(): Promise<Metadata> {
             name: "LuckyBase",
             url: appUrl,
             splashImageUrl: `${appUrl}/splash.png`,
-            splashBackgroundColor: "#000000",
+            splashBackgroundColor: "#0052FF",
           },
         },
       }),
@@ -46,11 +46,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background`}
       >
         <Providers>
           <FarcasterSDK />
-          {children}
+          <div className="min-h-screen flex justify-center">
+            <div className="w-full max-w-[480px] min-h-screen bg-background flex flex-col relative border-x border-base-blue/5 shadow-2xl">
+              {children}
+            </div>
+          </div>
         </Providers>
       </body>
     </html>
