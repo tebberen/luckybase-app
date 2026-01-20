@@ -8,7 +8,7 @@ import { base } from 'wagmi/chains';
 import { coinbaseWallet } from 'wagmi/connectors';
 
 const config = createConfig({
-  chains: [base],
+  chains: [base], // Base Mainnet (Chain ID: 8453)
   connectors: [
     coinbaseWallet({
       appName: 'LuckyBase',

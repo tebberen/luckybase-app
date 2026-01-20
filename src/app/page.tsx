@@ -12,11 +12,13 @@ import {
   Name,
   Identity,
 } from '@coinbase/onchainkit/identity';
-import { useAccount, useWriteContract } from 'wagmi';
-import { useState } from 'react';
-import { parseEther } from 'viem';
+import { useAccount, useWriteContract, useReadContract, useReadContracts } from 'wagmi';
+import { base } from 'wagmi/chains';
+import { useState, useMemo } from 'react';
+import { parseEther, formatEther } from 'viem';
 
-const DICE_GAME_ADDRESS = '0x5FbDB2315678afecb367f032d93F642f64180aa3'; // Placeholder (Localhost default)
+const TREASURY_ADDRESS = '0x71aFDE0D9849e492231dE0CB3559D2Ed02B518b6' as `0x${string}`;
+const DICE_GAME_ADDRESS = '0x9bA4560d7EAbbB86f8Ff98700641a79B06Ec7a6f' as `0x${string}`;
 
 const DICE_GAME_ABI = [
   {
@@ -116,10 +118,60 @@ export default function LuckyBasePage() {
   const { writeContract } = useWriteContract();
 
   const [activeDuelId, setActiveDuelId] = useState<number | null>(null);
-  const [duels] = useState([
-    { id: 1, player1: '0x02ef...5596', stake: '0.10', status: 'Waiting' },
-    { id: 2, player1: '0x838e...76E3', stake: '0.25', status: 'Waiting' },
-  ]);
+
+  const { data: nextGameId } = useReadContract({
+    address: DICE_GAME_ADDRESS,
+    abi: DICE_GAME_ABI,
+    functionName: 'nextGameId',
+  });
+
+  const gameIds = useMemo(() => {
+    if (!nextGameId) return [];
+    const count = Number(nextGameId);
+    // Fetch last 20 games to find active ones
+    const start = Math.max(0, count - 20);
+    return Array.from({ length: count - start }, (_, i) => BigInt(start + i));
+  }, [nextGameId]);
+
+  const { data: gamesData } = useReadContracts({
+    contracts: gameIds.map((id) => ({
+      address: DICE_GAME_ADDRESS,
+      abi: DICE_GAME_ABI,
+      functionName: 'games',
+      args: [id],
+    })),
+  });
+
+  const activeDuels = useMemo(() => {
+    if (!gamesData) return [];
+    return gamesData
+      .map((res, index) => {
+        if (res.status === 'success' && Array.isArray(res.result)) {
+          const [player1, player2, token, stake, startTime, isActive] = res.result as unknown as [string, string, string, bigint, bigint, boolean];
+          return {
+            id: Number(gameIds[index]),
+            player1,
+            player2,
+            token,
+            stake: formatEther(stake),
+            startTime,
+            isActive,
+          };
+        }
+        return null;
+      })
+      .filter((game): game is NonNullable<typeof game> =>
+        game !== null &&
+        game.isActive &&
+        game.player2 === '0x0000000000000000000000000000000000000000'
+      )
+      .reverse();
+  }, [gamesData, gameIds]);
+
+  const selectedDuel = useMemo(() =>
+    activeDuels.find(d => d.id === activeDuelId),
+    [activeDuels, activeDuelId]
+  );
 
   return (
     <div className="min-h-screen bg-black text-white p-4 sm:p-8 font-sans selection:bg-lime-400 selection:text-black">
@@ -164,13 +216,20 @@ export default function LuckyBasePage() {
               </div>
 
               <div className="space-y-4">
-                {duels.map((duel) => (
+                {activeDuels.length === 0 && (
+                  <div className="text-center py-12 border border-dashed border-white/10 rounded-2xl">
+                    <p className="text-white/20 font-bold uppercase tracking-widest">No active duels found</p>
+                  </div>
+                )}
+                {activeDuels.map((duel) => (
                   <div key={duel.id} className="group bg-white/5 border border-white/10 p-6 rounded-2xl flex justify-between items-center hover:border-lime-400/50 transition-all duration-300">
                     <div className="flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-full bg-gradient-to-br from-lime-400 to-green-600" />
+                      <div className="h-12 w-12 rounded-full bg-gradient-to-br from-lime-400 to-green-600 overflow-hidden">
+                         <Avatar address={duel.player1 as `0x${string}`} />
+                      </div>
                       <div>
                         <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Host</p>
-                        <p className="font-mono text-lg">{duel.player1}</p>
+                        <p className="font-mono text-lg">{`${duel.player1.slice(0, 6)}...${duel.player1.slice(-4)}`}</p>
                       </div>
                     </div>
 
@@ -185,9 +244,10 @@ export default function LuckyBasePage() {
                         writeContract({
                           address: DICE_GAME_ADDRESS,
                           abi: DICE_GAME_ABI,
-                          functionName: 'joinGame',
+                          functionName: 'joinGame', // Matches joinDuel requirement
                           args: [BigInt(duel.id)],
                           value: parseEther(duel.stake as `${number}`),
+                          chainId: base.id,
                         });
                       }}
                       className="bg-white text-black font-black px-8 py-3 rounded-xl hover:bg-lime-400 transition-colors uppercase italic tracking-tighter"
@@ -220,8 +280,9 @@ export default function LuckyBasePage() {
                     writeContract({
                       address: DICE_GAME_ADDRESS,
                       abi: DICE_GAME_ABI,
-                      functionName: 'createGameETH',
+                      functionName: 'createGameETH', // Matches createDuel requirement
                       value: parseEther('0.10'),
+                      chainId: base.id,
                     });
                   }}
                   className="w-full bg-lime-400 text-black font-black py-4 rounded-xl hover:bg-white transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_20px_rgba(163,230,53,0.2)] uppercase italic"
@@ -252,20 +313,22 @@ export default function LuckyBasePage() {
                   <div className="relative">
                     <div className="h-32 w-32 rounded-3xl bg-lime-400 rotate-3 absolute -inset-1 opacity-20 blur-xl" />
                     <div className="h-32 w-32 rounded-3xl bg-white/10 border-2 border-white/20 flex items-center justify-center relative overflow-hidden group">
-                      <Avatar className="h-full w-full" address="0x02ef790Dd7993A35fD847C053EDdAE940D055596" />
+                      <Avatar className="h-full w-full" address={selectedDuel?.player1 as `0x${string}`} />
                     </div>
                   </div>
                   <div className="text-center">
-                    <p className="text-lime-400 text-[10px] font-black uppercase tracking-[0.3em] mb-1">Founder</p>
-                    <Name address="0x02ef790Dd7993A35fD847C053EDdAE940D055596" className="text-2xl font-black italic" />
-                    <p className="text-white/40 font-mono text-xs mt-1">@dwr.eth</p>
+                    <p className="text-lime-400 text-[10px] font-black uppercase tracking-[0.3em] mb-1">Host</p>
+                    <Name address={selectedDuel?.player1 as `0x${string}`} className="text-2xl font-black italic" />
+                    <p className="text-white/40 font-mono text-xs mt-1">
+                      {selectedDuel ? `${selectedDuel.player1.slice(0, 6)}...${selectedDuel.player1.slice(-4)}` : ''}
+                    </p>
                   </div>
                 </div>
 
                 <div className="flex flex-col items-center gap-4">
                   <div className="text-6xl font-black italic text-white/10 select-none tracking-tighter">VS</div>
                   <div className="bg-lime-400/20 px-4 py-1 rounded-full border border-lime-400/30">
-                    <p className="text-lime-400 text-[10px] font-bold uppercase tracking-widest">0.10 ETH STAKE</p>
+                    <p className="text-lime-400 text-[10px] font-bold uppercase tracking-widest">{selectedDuel?.stake || '0.10'} ETH STAKE</p>
                   </div>
                 </div>
 
