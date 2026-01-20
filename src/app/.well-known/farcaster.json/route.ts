@@ -1,3 +1,5 @@
+export const dynamic = 'force-static';
+
 export async function GET() {
   const appUrl = process.env.NEXT_PUBLIC_URL || "https://luckybase.app";
 
