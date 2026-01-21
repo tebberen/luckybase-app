@@ -1,11 +1,6 @@
 'use client';
 
-import {
-  Wallet,
-  ConnectWallet,
-  WalletDropdown,
-  WalletDropdownDisconnect,
-} from '@coinbase/onchainkit/wallet';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 import {
   Address,
   Avatar,
@@ -120,7 +115,7 @@ export default function LuckyBasePage() {
 
   const [activeTab, setActiveTab] = useState<'lobby' | 'create' | 'ranks'>('lobby');
   const [activeDuelId, setActiveDuelId] = useState<number | null>(null);
-  const [stakeAmount, setStakeAmount] = useState('0.10');
+  const [stakeAmount, setStakeAmount] = useState('0.001');
 
   const { data: nextGameId } = useReadContract({
     address: DICE_GAME_ADDRESS,
@@ -176,9 +171,9 @@ export default function LuckyBasePage() {
   );
 
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground font-sans">
+    <div className="flex flex-col h-full bg-background text-foreground font-sans overflow-hidden">
       {/* Header */}
-      <header className="bg-base-blue text-white p-4 flex justify-between items-center sticky top-0 z-50 shadow-md">
+      <header className="bg-base-blue text-white p-4 flex justify-between items-center z-50 shadow-md flex-shrink-0">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
             <span className="text-base-blue font-black text-xl italic">L</span>
@@ -186,24 +181,15 @@ export default function LuckyBasePage() {
           <h1 className="text-xl font-black tracking-tighter italic">LUCKYBASE</h1>
         </div>
         <div className="flex items-center gap-2">
-           <Wallet>
-            <ConnectWallet className="bg-white/20 hover:bg-white/30 text-white border-none rounded-xl h-9 px-3">
-              <Avatar className="h-5 w-5" />
-              <Name className="text-white text-xs" />
-            </ConnectWallet>
-            <WalletDropdown>
-              <Identity className="px-4 pt-3 pb-2" hasCopyAddressOnClick>
-                <Avatar />
-                <Name />
-                <Address />
-              </Identity>
-              <WalletDropdownDisconnect />
-            </WalletDropdown>
-          </Wallet>
+           <ConnectButton
+             accountStatus="avatar"
+             chainStatus="none"
+             showBalance={false}
+           />
         </div>
       </header>
 
-      <main className="flex-1 p-4 pb-32">
+      <main className="main-content p-4 pb-32">
         {activeDuelId ? (
           /* Duel View */
           <div className="flex flex-col gap-6">
@@ -424,7 +410,7 @@ export default function LuckyBasePage() {
       </main>
 
       {/* Bottom Nav */}
-      <nav className="fixed bottom-0 w-full max-w-[480px] left-1/2 -translate-x-1/2 bg-white border-t border-base-blue/10 px-8 py-4 flex justify-between items-center z-50 pb-8 rounded-t-3xl shadow-[0_-10px_40px_-15px_rgba(0,82,255,0.1)]">
+      <nav className="bottom-nav bg-white border-t border-base-blue/10 px-8 py-4 flex justify-between items-center z-50 pb-8 rounded-t-3xl shadow-[0_-10px_40px_-15px_rgba(0,82,255,0.1)]">
          <button
             onClick={() => { setActiveTab('lobby'); setActiveDuelId(null); }}
             className={`flex flex-col items-center gap-1.5 transition-all ${activeTab === 'lobby' ? 'text-base-blue scale-110' : 'text-base-gray opacity-40 hover:opacity-80'}`}

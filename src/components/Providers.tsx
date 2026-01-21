@@ -3,23 +3,19 @@
 import { OnchainKitProvider } from '@coinbase/onchainkit';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
-import { WagmiProvider, createConfig, http } from 'wagmi';
+import { WagmiProvider, http } from 'wagmi';
 import { base } from 'wagmi/chains';
-import { coinbaseWallet, injected, walletConnect, metaMask } from 'wagmi/connectors';
+import {
+  getDefaultConfig,
+  RainbowKitProvider,
+  lightTheme
+} from '@rainbow-me/rainbowkit';
+import '@rainbow-me/rainbowkit/styles.css';
 
-const config = createConfig({
-  chains: [base], // Base Mainnet (Chain ID: 8453)
-  connectors: [
-    coinbaseWallet({
-      appName: 'LuckyBase',
-      preference: 'all',
-    }),
-    metaMask(),
-    injected(),
-    walletConnect({
-      projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID || 'ADD_YOUR_PROJECT_ID_HERE',
-    }),
-  ],
+const config = getDefaultConfig({
+  appName: 'LuckyBase',
+  projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID || 'ADD_YOUR_PROJECT_ID_HERE',
+  chains: [base],
   ssr: true,
   transports: {
     [base.id]: http(),
@@ -32,12 +28,21 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <OnchainKitProvider
-          apiKey={process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY}
-          chain={base}
+        <RainbowKitProvider
+          modalSize="compact"
+          theme={lightTheme({
+            accentColor: '#0052FF',
+            accentColorForeground: 'white',
+            borderRadius: 'large',
+          })}
         >
-          {children}
-        </OnchainKitProvider>
+          <OnchainKitProvider
+            apiKey={process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY}
+            chain={base}
+          >
+            {children}
+          </OnchainKitProvider>
+        </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
   );
