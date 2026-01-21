@@ -120,6 +120,7 @@ export default function LuckyBasePage() {
 
   const [activeTab, setActiveTab] = useState<'lobby' | 'create' | 'ranks'>('lobby');
   const [activeDuelId, setActiveDuelId] = useState<number | null>(null);
+  const [stakeAmount, setStakeAmount] = useState('0.10');
 
   const { data: nextGameId } = useReadContract({
     address: DICE_GAME_ADDRESS,
@@ -318,23 +319,49 @@ export default function LuckyBasePage() {
                 <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-base-blue/5">
                   <div className="mb-8">
                     <label className="text-[10px] font-bold text-base-gray uppercase tracking-widest block mb-3">Stake Amount</label>
-                    <div className="flex items-center justify-between bg-background rounded-2xl p-4 border border-base-blue/10">
-                      <span className="text-2xl font-black italic">0.10</span>
-                      <span className="text-sm font-bold text-base-blue">ETH</span>
+                    <div className="flex flex-col gap-3">
+                      <div className={`flex items-center justify-between bg-background rounded-2xl p-4 border transition-colors ${Number(stakeAmount) < 0.00004 && stakeAmount !== '' ? 'border-red-500' : 'border-base-blue/10'}`}>
+                        <input
+                          type="number"
+                          value={stakeAmount}
+                          onChange={(e) => setStakeAmount(e.target.value)}
+                          placeholder="0.00"
+                          step="0.00001"
+                          className="bg-transparent text-2xl font-black italic outline-none w-full mr-2"
+                        />
+                        <span className="text-sm font-bold text-base-blue">ETH</span>
+                      </div>
+
+                      <div className="flex gap-2">
+                        {[0.001, 0.01, 0.05].map((amount) => (
+                          <button
+                            key={amount}
+                            onClick={() => setStakeAmount(amount.toString())}
+                            className="flex-1 py-2 px-3 rounded-xl border border-base-blue/10 text-[10px] font-bold text-base-blue hover:bg-base-blue/5 transition-colors"
+                          >
+                            {amount} ETH
+                          </button>
+                        ))}
+                      </div>
+
+                      {Number(stakeAmount) < 0.00004 && stakeAmount !== '' && (
+                        <p className="text-[10px] font-bold text-red-500 uppercase tracking-widest px-1">Min stake is 0.00004 ETH</p>
+                      )}
                     </div>
                   </div>
 
                   <button
+                    disabled={Number(stakeAmount) < 0.00004}
                     onClick={() => {
                       writeContract({
                         address: DICE_GAME_ADDRESS,
                         abi: DICE_GAME_ABI,
                         functionName: 'createGameETH',
-                        value: parseEther('0.10'),
+                        value: parseEther(stakeAmount as `${number}`),
                         chainId: base.id,
                       });
                     }}
-                    className="w-full bg-base-blue text-white font-black py-5 rounded-2xl shadow-xl shadow-base-blue/20 uppercase tracking-[0.2em] italic text-sm active:scale-98 transition-all"
+                    className="w-full bg-base-blue text-white font-black py-5 rounded-2xl shadow-xl shadow-base-blue/20 uppercase tracking-[0.2em] italic text-sm active:scale-98 transition-all disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"
                   >
                     Launch Duel
                   </button>
