@@ -74,6 +74,13 @@ describe("LuckyBase Contracts", function () {
       expect(game.isActive).to.be.true;
     });
 
+    it("Should allow very small stake (0.00004 ETH)", async function () {
+      const stake = ethers.parseEther("0.00004");
+      await expect(diceGame.connect(player1).createGameETH({ value: stake }))
+        .to.emit(diceGame, "GameCreated")
+        .withArgs(0, player1.address, ethers.ZeroAddress, stake);
+    });
+
     it("Should resolve a game when player 2 joins", async function () {
       const stake = ethers.parseEther("0.1");
       await diceGame.connect(player1).createGameETH({ value: stake });
