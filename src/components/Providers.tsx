@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
 import { WagmiProvider, createConfig, http } from 'wagmi';
 import { base } from 'wagmi/chains';
-import { coinbaseWallet, injected, walletConnect } from 'wagmi/connectors';
+import { coinbaseWallet, injected, walletConnect, metaMask } from 'wagmi/connectors';
 
 const config = createConfig({
   chains: [base], // Base Mainnet (Chain ID: 8453)
@@ -14,6 +14,7 @@ const config = createConfig({
       appName: 'LuckyBase',
       preference: 'all',
     }),
+    metaMask(),
     injected(),
     walletConnect({
       projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID || 'ADD_YOUR_PROJECT_ID_HERE',

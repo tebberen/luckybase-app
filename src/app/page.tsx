@@ -252,13 +252,22 @@ export default function LuckyBasePage() {
               <div className="relative z-10">
                 <p className="text-[10px] font-bold uppercase tracking-widest opacity-80 mb-1">Your Balance</p>
                 <h2 className="text-3xl font-black italic tracking-tight">
-                  {ethBalance ? Number(ethBalance.formatted).toFixed(4) : '0.0000'} <span className="text-sm opacity-60">ETH</span>
+                  {address ? (
+                    <>
+                      {ethBalance ? Number(ethBalance.formatted).toFixed(4) : '0.0000'}{' '}
+                      <span className="text-sm opacity-60">ETH</span>
+                    </>
+                  ) : (
+                    <span className="text-xl">Connect Wallet to Play</span>
+                  )}
                 </h2>
               </div>
-              <div className="bg-white/20 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/30 text-center relative z-10">
-                <p className="text-[8px] font-bold uppercase tracking-widest opacity-80">Rank</p>
-                <p className="text-lg font-black italic">#12</p>
-              </div>
+              {address && (
+                <div className="bg-white/20 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/30 text-center relative z-10">
+                  <p className="text-[8px] font-bold uppercase tracking-widest opacity-80">Rank</p>
+                  <p className="text-lg font-black italic">#12</p>
+                </div>
+              )}
             </div>
 
             {activeTab === 'lobby' && (
@@ -322,11 +331,16 @@ export default function LuckyBasePage() {
                     <div className="flex flex-col gap-3">
                       <div className={`flex items-center justify-between bg-background rounded-2xl p-4 border transition-colors ${Number(stakeAmount) < 0.00004 && stakeAmount !== '' ? 'border-red-500' : 'border-base-blue/10'}`}>
                         <input
-                          type="number"
+                          type="text"
+                          inputMode="decimal"
                           value={stakeAmount}
-                          onChange={(e) => setStakeAmount(e.target.value)}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/[^0-9.]/g, '');
+                            if (val.split('.').length <= 2) {
+                              setStakeAmount(val);
+                            }
+                          }}
                           placeholder="0.00"
-                          step="0.00001"
                           className="bg-transparent text-2xl font-black italic outline-none w-full mr-2"
                         />
                         <span className="text-sm font-bold text-base-blue">ETH</span>
