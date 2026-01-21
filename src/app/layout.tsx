@@ -47,14 +47,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>
           <FarcasterSDK />
-          <div className="min-h-screen flex justify-center">
-            <div className="w-full max-w-[480px] min-h-screen bg-background flex flex-col relative border-x border-base-blue/5 shadow-2xl">
-              {children}
-            </div>
+          <div className="app-container">
+            {children}
           </div>
         </Providers>
       </body>
