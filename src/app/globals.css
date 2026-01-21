@@ -23,3 +23,51 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* OnchainKit Modal & Dropdown Styles */
+:root {
+  --ock-bg-default: var(--card-background);
+  --ock-text-default: var(--foreground);
+  --ock-accent-default: var(--base-blue);
+  --ock-border-radius: 1.5rem;
+}
+
+/* Ensure the backdrop is semi-transparent black and on top of everything */
+[data-testid="ock-modal-backdrop"] {
+  background-color: rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(8px);
+  z-index: 999 !important;
+}
+
+/* Centered modal style for OnchainKit */
+[data-testid="ock-connect-wallet-modal"] {
+  background: white !important;
+  border-radius: 2rem !important;
+  border: 1px solid rgba(0, 82, 255, 0.1) !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+  z-index: 1000 !important;
+}
+
+/* Ensure Wallet Dropdown is correctly layered and styled */
+.ock-wallet-dropdown {
+  z-index: 100 !important;
+  border-radius: 1.5rem !important;
+  border: 1px solid rgba(0, 82, 255, 0.1) !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Quick fix for mobile responsiveness of the modal */
+@media (max-width: 480px) {
+  [data-testid="ock-connect-wallet-modal"] {
+    width: calc(100% - 32px) !important;
+    margin: 16px !important;
+  }
+}
+
+/* Reinforce fixed positioning for bottom nav to prevent it from being pushed */
+nav.fixed {
+  transform: translateX(-50%) !important;
+  position: fixed !important;
+  bottom: 0 !important;
+  z-index: 50 !important;
+}
