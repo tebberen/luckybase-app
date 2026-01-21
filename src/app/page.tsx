@@ -15,6 +15,28 @@ import { parseEther, formatEther } from 'viem';
 const TREASURY_ADDRESS = '0x71aFDE0D9849e492231dE0CB3559D2Ed02B518b6' as `0x${string}`;
 const DICE_GAME_ADDRESS = '0x9bA4560d7EAbbB86f8Ff98700641a79B06Ec7a6f' as `0x${string}`;
 
+const LEADERBOARD_ABI = [
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "game",
+        "type": "address"
+      }
+    ],
+    "name": "authorizedGames",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+] as const;
+
 const DICE_GAME_ABI = [
   {
     "inputs": [],
@@ -105,6 +127,19 @@ const DICE_GAME_ABI = [
     ],
     "stateMutability": "view",
     "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "leaderboard",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   }
 ] as const;
 
@@ -114,6 +149,7 @@ export default function LuckyBasePage() {
   const { writeContract } = useWriteContract();
 
   const [activeTab, setActiveTab] = useState<'lobby' | 'create' | 'ranks'>('lobby');
+  const [showAuthWarning, setShowAuthWarning] = useState(false);
   const [activeDuelId, setActiveDuelId] = useState<number | null>(null);
   const [stakeAmount, setStakeAmount] = useState('0.001');
 
@@ -121,6 +157,22 @@ export default function LuckyBasePage() {
     address: DICE_GAME_ADDRESS,
     abi: DICE_GAME_ABI,
     functionName: 'nextGameId',
+  });
+
+  const { data: leaderboardAddress } = useReadContract({
+    address: DICE_GAME_ADDRESS,
+    abi: DICE_GAME_ABI,
+    functionName: 'leaderboard',
+  });
+
+  const { data: isAuthorized } = useReadContract({
+    address: leaderboardAddress as `0x${string}`,
+    abi: LEADERBOARD_ABI,
+    functionName: 'authorizedGames',
+    args: [DICE_GAME_ADDRESS],
+    query: {
+      enabled: !!leaderboardAddress,
+    }
   });
 
   const gameIds = useMemo(() => {
@@ -315,7 +367,7 @@ export default function LuckyBasePage() {
                   <div className="mb-8">
                     <label className="text-[10px] font-bold text-base-gray uppercase tracking-widest block mb-3">Stake Amount</label>
                     <div className="flex flex-col gap-3">
-                      <div className={`flex items-center justify-between bg-background rounded-2xl p-4 border transition-colors ${Number(stakeAmount) < 0.00004 && stakeAmount !== '' ? 'border-red-500' : 'border-base-blue/10'}`}>
+                      <div className={`flex items-center justify-between bg-background rounded-2xl p-4 border transition-colors ${Number(stakeAmount) < 0.00001 && stakeAmount !== '' ? 'border-red-500' : 'border-base-blue/10'}`}>
                         <input
                           type="text"
                           inputMode="decimal"
@@ -344,15 +396,19 @@ export default function LuckyBasePage() {
                         ))}
                       </div>
 
-                      {Number(stakeAmount) < 0.00004 && stakeAmount !== '' && (
-                        <p className="text-[10px] font-bold text-red-500 uppercase tracking-widest px-1">Min stake is 0.00004 ETH</p>
+                      {Number(stakeAmount) < 0.00001 && stakeAmount !== '' && (
+                        <p className="text-[10px] font-bold text-red-500 uppercase tracking-widest px-1">Min stake is 0.00001 ETH</p>
                       )}
                     </div>
                   </div>
 
                   <button
-                    disabled={Number(stakeAmount) < 0.00004}
+                    disabled={Number(stakeAmount) < 0.00001}
                     onClick={() => {
+                      if (isAuthorized === false) {
+                        setShowAuthWarning(true);
+                        return;
+                      }
                       writeContract({
                         address: DICE_GAME_ADDRESS,
                         abi: DICE_GAME_ABI,
@@ -365,6 +421,37 @@ export default function LuckyBasePage() {
                   >
                     Launch Duel
                   </button>
+
+                  {isAuthorized === false && (
+                    <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-xl">
+                      <p className="text-[10px] font-bold text-amber-700 uppercase tracking-tight text-center">
+                        ⚠️ Contract not authorized in Leaderboard. Wins may not be tracked, but you can still play.
+                      </p>
+                    </div>
+                  )}
+
+                  {showAuthWarning && (
+                    <div className="mt-2 p-2 bg-red-50 border border-red-100 rounded-lg">
+                      <p className="text-[9px] font-bold text-red-600 uppercase text-center">
+                        Proceed with caution: Contract needs authorization.
+                      </p>
+                      <button
+                        onClick={() => {
+                          setShowAuthWarning(false);
+                          writeContract({
+                            address: DICE_GAME_ADDRESS,
+                            abi: DICE_GAME_ABI,
+                            functionName: 'createGameETH',
+                            value: parseEther(stakeAmount as `${number}`),
+                            chainId: base.id,
+                          });
+                        }}
+                        className="w-full mt-2 text-[8px] font-black text-red-700 underline uppercase"
+                      >
+                        I understand, launch anyway
+                      </button>
+                    </div>
+                  )}
 
                   <p className="text-[9px] text-base-gray text-center mt-6 font-bold leading-relaxed opacity-60">
                     10% PLATFORM FEE APPLIES <br/>

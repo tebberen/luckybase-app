@@ -47,7 +47,7 @@ contract DiceGame is Ownable {
      * @dev Creates a new 1v1 dice game with ETH.
      */
     function createGameETH() external payable {
-        require(msg.value >= 0.1 ether, "Min stake 0.1 ETH");
+        require(msg.value >= 0.00001 ether, "Min stake 0.00001 ETH");
 
         _createGame(msg.sender, address(0), msg.value);
     }
@@ -57,7 +57,7 @@ contract DiceGame is Ownable {
      * @param amount The amount of USDC to stake.
      */
     function createGameUSDC(uint256 amount) external {
-        require(amount >= 0.1 * 10**6, "Min stake 0.1 USDC"); // Assuming USDC has 6 decimals
+        require(amount >= 10000, "Min stake 0.01 USDC"); // Assuming USDC has 6 decimals
 
         usdc.safeTransferFrom(msg.sender, address(this), amount);
         _createGame(msg.sender, address(usdc), amount);
